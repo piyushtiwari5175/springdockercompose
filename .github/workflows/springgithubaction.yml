@@ -1,4 +1,4 @@
-name: Spring-boot-application
+name: Spring Boot Application
 
 on:
   push:
@@ -13,11 +13,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Set up JDK 8 with distribution
-      - name: Set up JDK 8
+      # Set up JDK
+      - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: '8'
+          java-version: '11'  # Change this to your required version
           distribution: 'temurin'
 
       # Cache Maven dependencies
@@ -29,9 +29,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      # Build with Maven using parallel threads
+      # Build with Maven using parallel threads and skip tests
       - name: Build with Maven
-        run: mvn clean package -T 1C
+        run: mvn clean package -DskipTests -T 1C
 
       # Set up Docker Buildx
       - name: Set up Docker Buildx
@@ -45,9 +45,10 @@ jobs:
       - name: Run Docker Compose
         run: docker-compose up -d
 
-      # Wait for MySQL to be ready (adjust the time as necessary)
+      # Wait for MySQL to be ready
       - name: Wait for MySQL to start
         run: |
+          echo "Waiting for MySQL to start..."
           for i in {1..30}; do
             if docker exec mysql mysqladmin ping -h localhost --silent; then
               echo "MySQL is up!"
@@ -59,4 +60,4 @@ jobs:
 
       # Run Maven tests
       - name: Run Maven tests
-        run: mvn test
+        run: mvn test -DskipDockerTests=false
