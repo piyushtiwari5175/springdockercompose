@@ -11,15 +11,48 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3  # Correct format: owner/repo@version
 
-      # Corrected: Set up JDK 8 with distribution
+      # Correct: Set up JDK 8 with distribution
       - name: Set up JDK 8
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v3  # Correct format: owner/repo@version
         with:
           java-version: '8'
           distribution: 'temurin'  # Specify the Java distribution
 
       # Cache Maven dependencies
       - name: Cache Maven dependencies
-        uses: actions
+        uses: actions/cache@v3  # Correct format: owner/repo@version
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      # Build with Maven using parallel threads
+      - name: Build with Maven
+        run: mvn clean package -T 1C
+
+      # Set up Docker Buildx for faster Docker builds
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2  # Correct format: owner/repo@version
+
+      # Build Docker image with cache
+      - name: Build Docker image
+        run: docker build --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache -t my-app:latest .
+
+      # Run Docker Compose to start services
+      - name: Run Docker Compose
+        run: docker-compose up -d
+
+      # Optionally show Docker logs for debugging
+      - name: Show Docker Compose logs
+        run: docker-compose logs
+
+      # Wait for services to start (adjust time if needed)
+      - name: Wait for services to start
+        run: sleep 30
+
+      # Run Maven tests
+      - name: Run Maven tests
+        run: mvn test
