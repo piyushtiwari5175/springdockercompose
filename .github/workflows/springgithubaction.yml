@@ -52,18 +52,7 @@ jobs:
       - name: Run Docker Compose
         run: docker-compose up -d
 
-      # Wait for MySQL to be ready
-      - name: Wait for MySQL to start
-        run: |
-          echo "Waiting for MySQL to start..."
-          for i in {1..30}; do
-            if docker exec mysql mysqladmin ping -h localhost --silent; then
-              echo "MySQL is up!"
-              break
-            fi
-            echo "Waiting for MySQL to start..."
-            sleep 5
-          done
+      #
 
       # Run Maven tests
       - name: Run Maven tests
