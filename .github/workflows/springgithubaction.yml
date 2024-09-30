@@ -1,0 +1,38 @@
+name: Spring-boot-application
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu:latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+            java-version: '8'
+
+      - name: Build with Maven
+        run: mvn clean package
+
+      - name: Build Docker image
+        run: docker build . -t my-app:latest
+
+
+      - name: Run Docker Compose
+        run: docker-compose up -d
+
+
+      - name: Wait for services to start
+        run: sleep 30
+
+
+      - name: Run Maven tests
+        run: mvn test
+
