@@ -63,6 +63,7 @@ jobs:
             fi
             echo "Waiting for MySQL to start..."
             sleep 5
+          done
 
       # Run Maven tests with debug output
       - name: Run Maven tests
