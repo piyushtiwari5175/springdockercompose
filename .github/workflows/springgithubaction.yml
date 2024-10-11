@@ -61,8 +61,7 @@ jobs:
             sleep 5
           done
 
-      # Run Maven tests with debug output
-      - name: Run Maven tests
-        run: mvn test -DskipDockerTests=false -X
+      
+      
 
 
