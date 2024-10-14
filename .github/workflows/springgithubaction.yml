@@ -57,12 +57,12 @@ jobs:
         run: |
           echo "Waiting for MySQL to start..."
           for i in {1..120}; do  # Increased to 120 iterations
-            if docker exec mysqldb mysqladmin ping -h localhost --silent; then
+            if docker exec mysqldb mysqladmin ping -h localhost -P 3306 --silent; then
               echo "MySQL is up!"
               break
             fi
             echo "Waiting for MySQL to start... Attempt #$i"
-            sleep 5
+            sleep 10
           done
 
       # Run Maven tests with debug output
