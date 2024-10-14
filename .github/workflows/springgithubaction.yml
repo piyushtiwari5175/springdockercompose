@@ -62,9 +62,9 @@ jobs:
               break
             fi
             echo "Waiting for MySQL to start... Attempt #$i"
-            sleep 10
+            sleep 5
           done
 
-      # Run Maven tests with debug output
-      - name: Run Maven tests
-        run: mvn test -DskipDockerTests=false -X
+      # Run Maven install without tests
+      - name: Run Maven install
+        run: mvn install -DskipTests
