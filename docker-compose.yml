@@ -1,7 +1,6 @@
 version: "3.8"
 services:
   springboot-app:
-
     image: springbooot-app
     restart: always
     build: .
@@ -12,13 +11,21 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: 5175
       MYSQL_PORT: 3306
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+
   mysqldb:
     container_name: mysqldb
     image: mysql
     volumes:
-      -  /home/user/Desktop/db:/var/lib/mysql
+      - /home/user/Desktop/db:/var/lib/mysql
     ports:
-      - 3307:3306
+      - 3306:3306  # or keep 3307:3306 if you adjust application.properties
     environment:
       MYSQL_DATABASE: test
       MYSQL_ROOT_PASSWORD: 5175
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
