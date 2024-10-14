@@ -21,7 +21,7 @@ services:
     volumes:
       - /home/user/Desktop/db:/var/lib/mysql
     ports:
-      - 3306:3306  # or keep 3307:3306 if you adjust application.properties
+      - 3307:3306  # or keep 3307:3306 if you adjust application.properties
     environment:
       MYSQL_DATABASE: test
       MYSQL_ROOT_PASSWORD: 5175

@@ -1,10 +1,8 @@
 name: Spring Boot Application
-
 on:
   push:
     branches:
       - main
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,7 +15,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: '11'  # Use the appropriate version
+          java-version: '11' 
           distribution: 'temurin'
 
       # Cache Maven dependencies
@@ -28,33 +26,20 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      # Build with Maven using parallel threads and skip tests
-      - name: Build with Maven
-        run: mvn clean package -DskipTests -T 1C
 
-      # Set up Docker Buildx
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      # Install Docker Compose
-      - name: Install Docker Compose
-        run: |
-          DOCKER_COMPOSE_VERSION=1.29.2
-          sudo curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-      # Build Docker image without caching
+      # Build Docker image
       - name: Build Docker image
-        run: docker build -t my-app:latest .
+        run: docker-compose build
 
       # Run Docker Compose to start services
       - name: Run Docker Compose
         run: docker-compose up -d
 
-      # Wait for MySQL to be ready (extended time)
-      - name: Wait for MySQL to start
+      # Wait for MySQL to start (extended time)
+      - name: Wait for MySQL to start (extended)
         run: |
           echo "Waiting for MySQL to start..."
-          for i in {1..60}; do
+          for i in {1..75}; do
             if docker exec mysqldb mysqladmin ping -h localhost --silent; then
               echo "MySQL is up!"
               break
@@ -62,6 +47,7 @@ jobs:
             echo "Waiting for MySQL to start..."
             sleep 5
           done
-      # Run Maven tests with debug output
+
+      # Run Maven tests in the Docker container
       - name: Run Maven tests
-        run: mvn test -DskipDockerTests=false -X
+        run: docker exec -it springboot-docker-compose-master-springboot-app-1 mvn test -DskipDockerTests=false -X
