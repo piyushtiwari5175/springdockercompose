@@ -1,8 +1,10 @@
 name: Spring Boot Application
+
 on:
   push:
     branches:
       - main
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,20 +17,8 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: '11' 
+          java-version: '11'  # Use the appropriate version
           distribution: 'temurin'
-
-      # Install Docker and Docker Compose
-      - name: Install Docker
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io
-          sudo systemctl start docker
-          sudo systemctl enable docker
-
-      - name: Install Docker Compose
-        run: |
-          sudo apt-get install -y docker-compose
 
       # Cache Maven dependencies
       - name: Cache Maven dependencies
@@ -38,20 +28,33 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+      # Build with Maven using parallel threads and skip tests
+      - name: Build with Maven
+        run: mvn clean package -DskipTests -T 1C
 
-      # Build Docker image
+      # Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Install Docker Compose
+      - name: Install Docker Compose
+        run: |
+          DOCKER_COMPOSE_VERSION=1.29.2
+          sudo curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+      # Build Docker image without caching
       - name: Build Docker image
-        run: docker-compose build
+        run: docker build -t my-app:latest .
 
       # Run Docker Compose to start services
       - name: Run Docker Compose
         run: docker-compose up -d
 
-      # Wait for MySQL to start (extended time)
-      - name: Wait for MySQL to start (extended)
+      # Wait for MySQL to be ready (extended time)
+      - name: Wait for MySQL to start
         run: |
           echo "Waiting for MySQL to start..."
-          for i in {1..75}; do
+          for i in {1..60}; do
             if docker exec mysqldb mysqladmin ping -h localhost --silent; then
               echo "MySQL is up!"
               break
@@ -59,7 +62,6 @@ jobs:
             echo "Waiting for MySQL to start..."
             sleep 5
           done
-
-      # Run Maven tests in the Docker container
+      # Run Maven tests with debug output
       - name: Run Maven tests
-        run: docker exec -it springboot-docker-compose-master-springboot-app-1 mvn test -DskipDockerTests=false -X
+        run: mvn test -DskipDockerTests=false -X
