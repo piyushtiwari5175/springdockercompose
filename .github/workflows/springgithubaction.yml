@@ -39,4 +39,5 @@ jobs:
         run: mvn -version
 
       - name: Run Maven clean and package
-        run: mvn clean
+        run: mvn clean package
+
