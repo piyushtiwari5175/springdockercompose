@@ -1,20 +1,41 @@
-name: Spring Boot Application
+name: Setup JDK and Check Version
 
 on:
   push:
     branches:
       - main
-      - develop
 
 jobs:
-  pull-docker-image:
+  setup-jdk-and-check-version:
     runs-on: ubuntu-latest
-    steps:
-      - name: Docker Hub Login
-        uses: docker/login-action@v3
-        with:
-          username: saish1717
-          password: saish@5000
 
-      - name: Use custom Docker Action
-        uses: docker://saish1717/jq:action
+    steps:
+      -  name: Checkout repository
+         uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+
+
+
+      - name: Check Java version
+        run: java -version
+
+#      - name: Install Maven 3.9.11
+#        run: |
+#          MAVEN_VERSION=3.9.11
+#          wget https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz
+#          tar -xzf apache-maven-${MAVEN_VERSION}-bin.tar.gz
+#          sudo mv apache-maven-${MAVEN_VERSION} /opt/maven
+#          echo "/opt/maven/bin" >> $GITHUB_PATH
+      
+
+      - name: Check maven version
+        run: mvn -version
+
+      - name: Run Maven clean and package
+        run: mvn clean
